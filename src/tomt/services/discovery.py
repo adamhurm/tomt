@@ -18,8 +18,8 @@ class DiscoveryService:
     def __init__(
         self,
         reddit_client_id: str,
-        reddit_client_secret: str,
         anthropic_api_key: str,
+        reddit_client_secret: Optional[str] = None,
         db_path: str = "tomt.db",
         subreddits: Optional[list[str]] = None,
     ):
@@ -27,8 +27,8 @@ class DiscoveryService:
 
         Args:
             reddit_client_id: Reddit API client ID
-            reddit_client_secret: Reddit API client secret
             anthropic_api_key: Anthropic API key for Claude
+            reddit_client_secret: Reddit API client secret (optional for installed apps)
             db_path: Path to SQLite database
             subreddits: Optional list of subreddits to scrape
         """
