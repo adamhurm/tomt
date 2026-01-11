@@ -19,13 +19,12 @@ console = Console()
 def get_service(db_path: str = "tomt.db") -> DiscoveryService:
     """Create a DiscoveryService from environment variables."""
     reddit_client_id = os.getenv("REDDIT_CLIENT_ID")
-    reddit_client_secret = os.getenv("REDDIT_CLIENT_SECRET")
+    reddit_client_secret = os.getenv("REDDIT_CLIENT_SECRET")  # Optional for installed apps
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
-    if not reddit_client_id or not reddit_client_secret:
+    if not reddit_client_id:
         raise click.ClickException(
-            "Reddit credentials not found. "
-            "Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET environment variables."
+            "Reddit client ID not found. Set REDDIT_CLIENT_ID environment variable."
         )
 
     if not anthropic_api_key:
@@ -35,8 +34,8 @@ def get_service(db_path: str = "tomt.db") -> DiscoveryService:
 
     return DiscoveryService(
         reddit_client_id=reddit_client_id,
-        reddit_client_secret=reddit_client_secret,
         anthropic_api_key=anthropic_api_key,
+        reddit_client_secret=reddit_client_secret,  # Can be None for installed apps
         db_path=db_path,
     )
 

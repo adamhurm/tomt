@@ -48,7 +48,7 @@ class RedditScraper:
     def __init__(
         self,
         client_id: str,
-        client_secret: str,
+        client_secret: Optional[str] = None,
         user_agent: str = "TOMT Music Discovery Bot v0.1",
         subreddits: Optional[list[str]] = None,
     ):
@@ -56,13 +56,14 @@ class RedditScraper:
 
         Args:
             client_id: Reddit API client ID
-            client_secret: Reddit API client secret
+            client_secret: Reddit API client secret (optional for installed apps)
             user_agent: User agent string for API requests
             subreddits: List of subreddits to scrape (defaults to music TOMT subs)
         """
+        # Support both script apps (with secret) and installed apps (without)
         self.reddit = praw.Reddit(
             client_id=client_id,
-            client_secret=client_secret,
+            client_secret=client_secret or "",
             user_agent=user_agent,
         )
         self.subreddits = subreddits or DEFAULT_SUBREDDITS
