@@ -121,6 +121,15 @@ class OpenRequestsRequest(BaseModel):
     )
 
 
+class RandomRequest(BaseModel):
+    """Request for random song endpoint."""
+
+    keys: Optional[ApiKeys] = Field(
+        default=None,
+        description="Optional API keys (BYOK)",
+    )
+
+
 class PostResponse(BaseModel):
     """Response model for a post."""
 
