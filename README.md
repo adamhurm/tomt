@@ -81,6 +81,90 @@ tomt open-requests
 tomt stats
 ```
 
+## Web Service
+
+TOMT also provides a web service with a full REST API and web interface.
+
+### Running the Web Service
+
+```bash
+# Start the web server
+tomt-web
+
+# The server runs on http://localhost:8000 by default
+```
+
+Environment variables for the web service:
+- `TOMT_HOST`: Host to bind to (default: `0.0.0.0`)
+- `TOMT_PORT`: Port to listen on (default: `8000`)
+- `TOMT_DB_PATH`: Database path (default: `tomt.db`)
+
+### Web Interface
+
+Visit `http://localhost:8000` in your browser for a full-featured web UI that includes:
+- Discovery runner with mode/limit configuration
+- Song browser and search
+- Open requests viewer
+- Database statistics
+
+### API Endpoints
+
+All CLI features are available via REST API:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check and configuration status |
+| POST | `/api/discover` | Run discovery cycle |
+| GET/POST | `/api/songs` | List discovered songs |
+| GET/POST | `/api/search` | Search for songs |
+| GET/POST | `/api/open-requests` | List open song requests |
+| GET/POST | `/api/stats` | Get database statistics |
+| POST | `/api/process` | Process solved posts |
+
+API documentation is available at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+### Bring Your Own Keys (BYOK)
+
+Users can provide their own API keys instead of relying on server configuration. Keys can be provided via:
+
+1. **Request body** (highest priority):
+```json
+{
+  "keys": {
+    "reddit_client_id": "your_id",
+    "reddit_client_secret": "your_secret",
+    "anthropic_api_key": "your_key"
+  }
+}
+```
+
+2. **HTTP headers**:
+```
+X-Reddit-Client-Id: your_id
+X-Reddit-Client-Secret: your_secret
+X-Anthropic-Api-Key: your_key
+```
+
+3. **Environment variables** (lowest priority, server default)
+
+### Docker Web Service
+
+Run the web service in Docker:
+
+```bash
+# Run CLI (default)
+docker run -it ghcr.io/adamhurm/tomt tomt --help
+
+# Run web service
+docker run -p 8000:8000 \
+  -e REDDIT_CLIENT_ID=your_id \
+  -e ANTHROPIC_API_KEY=your_key \
+  -v tomt-data:/app/data \
+  ghcr.io/adamhurm/tomt tomt-web
+```
+
 ## Architecture
 
 ```
@@ -95,6 +179,11 @@ src/tomt/
 │   └── parser.py    # Claude-powered post parsing
 ├── storage/         # Data persistence
 │   └── database.py  # SQLite storage layer
+├── web/             # Web service
+│   ├── __init__.py  # FastAPI app and server
+│   ├── routes.py    # API endpoints
+│   ├── schemas.py   # Request/response models
+│   └── templates/   # Web UI templates
 └── cli.py           # Command-line interface
 ```
 

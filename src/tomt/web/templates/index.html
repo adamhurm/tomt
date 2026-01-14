@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOMT - Music Discovery</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.configured {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.missing {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: var(--bg-input);
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .results {
+            margin-top: 24px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .song-card, .post-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .song-card:hover, .post-card:hover {
+            border-color: var(--primary);
+        }
+
+        .song-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .song-artist {
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .song-meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .post-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .post-link {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .post-link:hover {
+            text-decoration: underline;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .stat-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 500px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .api-docs-link {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .api-docs-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .inline-form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .inline-form input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>TOMT</span> Music Discovery</h1>
+            <p class="subtitle">Discover songs that people are searching for on Reddit</p>
+        </header>
+
+        <!-- API Keys Configuration -->
+        <div class="card">
+            <div class="collapsible-header" onclick="toggleApiKeys()">
+                <div class="card-title">
+                    API Keys Configuration
+                    {% if has_reddit_key and has_anthropic_key %}
+                    <span class="status-badge configured">Server Configured</span>
+                    {% else %}
+                    <span class="status-badge missing">Keys Required</span>
+                    {% endif %}
+                </div>
+                <span class="toggle-icon" id="apiKeysToggle">&#9660;</span>
+            </div>
+            <div class="collapsible-content {% if not has_reddit_key or not has_anthropic_key %}expanded{% endif %}" id="apiKeysContent">
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    {% if has_reddit_key and has_anthropic_key %}
+                    Server has API keys configured. You can optionally override them below.
+                    {% else %}
+                    Enter your API keys to use the service. Keys are only used for this session.
+                    {% endif %}
+                </p>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="redditClientId">Reddit Client ID</label>
+                        <input type="text" id="redditClientId" placeholder="{% if has_reddit_key %}Using server key{% else %}Enter Reddit Client ID{% endif %}">
+                    </div>
+                    <div class="form-group">
+                        <label for="redditClientSecret">Reddit Client Secret (optional)</label>
+                        <input type="password" id="redditClientSecret" placeholder="Optional for installed apps">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="anthropicApiKey">Anthropic API Key</label>
+                    <input type="password" id="anthropicApiKey" placeholder="{% if has_anthropic_key %}Using server key{% else %}Enter Anthropic API Key{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="discover">Discover</button>
+            <button class="tab" data-tab="songs">Songs</button>
+            <button class="tab" data-tab="search">Search</button>
+            <button class="tab" data-tab="requests">Open Requests</button>
+            <button class="tab" data-tab="stats">Stats</button>
+        </div>
+
+        <!-- Discover Tab -->
+        <div class="tab-content active" id="discover">
+            <div class="card">
+                <h2 class="card-title">Run Discovery</h2>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    Scrape Reddit for song identification posts and extract song information.
+                </p>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="discoverMode">Mode</label>
+                        <select id="discoverMode">
+                            <option value="solved">Solved (recommended)</option>
+                            <option value="new">New posts</option>
+                            <option value="hot">Hot posts</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="discoverLimit">Max posts per subreddit</label>
+                        <input type="number" id="discoverLimit" value="100" min="1" max="500">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="discoverProcess" checked>
+                        Process solved posts to extract songs
+                    </label>
+                </div>
+                <button class="btn btn-primary" id="discoverBtn" onclick="runDiscover()">
+                    Run Discovery
+                </button>
+                <div id="discoverResults" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Songs Tab -->
+        <div class="tab-content" id="songs">
+            <div class="card">
+                <h2 class="card-title">Discovered Songs</h2>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    Songs discovered from Reddit, ordered by how often they were sought.
+                </p>
+                <div class="form-group">
+                    <label for="songsLimit">Max results</label>
+                    <input type="number" id="songsLimit" value="20" min="1" max="100" style="max-width: 200px;">
+                </div>
+                <button class="btn btn-primary" onclick="loadSongs()">Load Songs</button>
+                <div id="songsResults" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div class="tab-content" id="search">
+            <div class="card">
+                <h2 class="card-title">Search Songs</h2>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    Search for songs by title or artist.
+                </p>
+                <div class="inline-form">
+                    <input type="text" id="searchQuery" placeholder="Enter song title or artist name...">
+                    <button class="btn btn-primary" onclick="searchSongs()">Search</button>
+                </div>
+                <div id="searchResults" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Open Requests Tab -->
+        <div class="tab-content" id="requests">
+            <div class="card">
+                <h2 class="card-title">Open Song Requests</h2>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    Currently unsolved song identification requests from Reddit.
+                </p>
+                <div class="form-group">
+                    <label for="requestsLimit">Max results</label>
+                    <input type="number" id="requestsLimit" value="20" min="1" max="100" style="max-width: 200px;">
+                </div>
+                <button class="btn btn-primary" onclick="loadOpenRequests()">Load Requests</button>
+                <div id="requestsResults" class="results"></div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div class="tab-content" id="stats">
+            <div class="card">
+                <h2 class="card-title">Database Statistics</h2>
+                <button class="btn btn-primary" onclick="loadStats()">Load Stats</button>
+                <div id="statsResults" class="results"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>TOMT Music Discovery v0.1.0</p>
+            <p style="margin-top: 8px;">
+                <a href="/docs" class="api-docs-link">API Documentation</a> |
+                <a href="/redoc" class="api-docs-link">ReDoc</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // API Keys toggle
+        function toggleApiKeys() {
+            const content = document.getElementById('apiKeysContent');
+            const toggle = document.getElementById('apiKeysToggle');
+            content.classList.toggle('expanded');
+            toggle.classList.toggle('expanded');
+        }
+
+        // Get API keys from inputs
+        function getApiKeys() {
+            const keys = {};
+            const redditClientId = document.getElementById('redditClientId').value.trim();
+            const redditClientSecret = document.getElementById('redditClientSecret').value.trim();
+            const anthropicApiKey = document.getElementById('anthropicApiKey').value.trim();
+
+            if (redditClientId) keys.reddit_client_id = redditClientId;
+            if (redditClientSecret) keys.reddit_client_secret = redditClientSecret;
+            if (anthropicApiKey) keys.anthropic_api_key = anthropicApiKey;
+
+            return Object.keys(keys).length > 0 ? keys : null;
+        }
+
+        // Show loading state
+        function showLoading(containerId) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading...</span>
+                </div>
+            `;
+        }
+
+        // Show error
+        function showError(containerId, message) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="error">${message}</div>
+            `;
+        }
+
+        // Show success
+        function showSuccess(containerId, message) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="success">${message}</div>
+            `;
+        }
+
+        // Run discovery
+        async function runDiscover() {
+            const btn = document.getElementById('discoverBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px;"></div> Running...';
+            showLoading('discoverResults');
+
+            try {
+                const response = await fetch('/api/discover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: document.getElementById('discoverMode').value,
+                        limit: parseInt(document.getElementById('discoverLimit').value),
+                        process: document.getElementById('discoverProcess').checked,
+                        keys: getApiKeys()
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Discovery failed');
+                }
+
+                const data = await response.json();
+                document.getElementById('discoverResults').innerHTML = `
+                    <div class="success">Discovery completed!</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">${data.posts_scraped}</div>
+                            <div class="stat-label">Posts Scraped</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${data.songs_found}</div>
+                            <div class="stat-label">Songs Found</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${data.total_posts}</div>
+                            <div class="stat-label">Total Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${data.total_songs}</div>
+                            <div class="stat-label">Total Songs</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${(data.solve_rate * 100).toFixed(1)}%</div>
+                            <div class="stat-label">Solve Rate</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError('discoverResults', error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Run Discovery';
+            }
+        }
+
+        // Load songs
+        async function loadSongs() {
+            showLoading('songsResults');
+
+            try {
+                const body = {
+                    limit: parseInt(document.getElementById('songsLimit').value),
+                    keys: getApiKeys()
+                };
+
+                const response = await fetch('/api/songs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to load songs');
+                }
+
+                const songs = await response.json();
+
+                if (songs.length === 0) {
+                    document.getElementById('songsResults').innerHTML = `
+                        <div class="empty-state">
+                            No songs discovered yet. Run a discovery cycle first.
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="results-header"><span>${songs.length} songs found</span></div>`;
+                songs.forEach((song, i) => {
+                    html += `
+                        <div class="song-card">
+                            <div class="song-title">${i + 1}. ${escapeHtml(song.title)}</div>
+                            <div class="song-artist">${escapeHtml(song.artist)}</div>
+                            <div class="song-meta">
+                                ${song.album ? `<span>Album: ${escapeHtml(song.album)}</span>` : ''}
+                                ${song.year ? `<span>Year: ${song.year}</span>` : ''}
+                                <span>Sought ${song.discovery_count} time${song.discovery_count !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('songsResults').innerHTML = html;
+            } catch (error) {
+                showError('songsResults', error.message);
+            }
+        }
+
+        // Search songs
+        async function searchSongs() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) {
+                showError('searchResults', 'Please enter a search query');
+                return;
+            }
+
+            showLoading('searchResults');
+
+            try {
+                const body = {
+                    query: query,
+                    limit: 20,
+                    keys: getApiKeys()
+                };
+
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Search failed');
+                }
+
+                const songs = await response.json();
+
+                if (songs.length === 0) {
+                    document.getElementById('searchResults').innerHTML = `
+                        <div class="empty-state">
+                            No songs found matching "${escapeHtml(query)}"
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="results-header"><span>${songs.length} results for "${escapeHtml(query)}"</span></div>`;
+                songs.forEach(song => {
+                    html += `
+                        <div class="song-card">
+                            <div class="song-title">${escapeHtml(song.title)}</div>
+                            <div class="song-artist">${escapeHtml(song.artist)}</div>
+                            <div class="song-meta">
+                                ${song.album ? `<span>Album: ${escapeHtml(song.album)}</span>` : ''}
+                                ${song.year ? `<span>Year: ${song.year}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('searchResults').innerHTML = html;
+            } catch (error) {
+                showError('searchResults', error.message);
+            }
+        }
+
+        // Load open requests
+        async function loadOpenRequests() {
+            showLoading('requestsResults');
+
+            try {
+                const body = {
+                    limit: parseInt(document.getElementById('requestsLimit').value),
+                    keys: getApiKeys()
+                };
+
+                const response = await fetch('/api/open-requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to load requests');
+                }
+
+                const posts = await response.json();
+
+                if (posts.length === 0) {
+                    document.getElementById('requestsResults').innerHTML = `
+                        <div class="empty-state">
+                            No open requests found.
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="results-header"><span>${posts.length} open requests</span></div>`;
+                posts.forEach(post => {
+                    const title = post.title.length > 60 ? post.title.substring(0, 60) + '...' : post.title;
+                    html += `
+                        <div class="post-card">
+                            <div class="post-title">${escapeHtml(title)}</div>
+                            <div class="post-meta">
+                                <span>r/${escapeHtml(post.subreddit)}</span>
+                                <span>Score: ${post.score}</span>
+                                <span>${post.num_comments} comments</span>
+                                <a href="${post.url}" target="_blank" class="post-link">View on Reddit</a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('requestsResults').innerHTML = html;
+            } catch (error) {
+                showError('requestsResults', error.message);
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            showLoading('statsResults');
+
+            try {
+                const body = {
+                    keys: getApiKeys()
+                };
+
+                const response = await fetch('/api/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to load stats');
+                }
+
+                const stats = await response.json();
+
+                document.getElementById('statsResults').innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">${stats.total_posts}</div>
+                            <div class="stat-label">Total Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${stats.solved_posts}</div>
+                            <div class="stat-label">Solved Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${stats.unsolved_posts}</div>
+                            <div class="stat-label">Unsolved Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${(stats.solve_rate * 100).toFixed(1)}%</div>
+                            <div class="stat-label">Solve Rate</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${stats.total_songs}</div>
+                            <div class="stat-label">Songs Discovered</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError('statsResults', error.message);
+            }
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Allow Enter key for search
+        document.getElementById('searchQuery').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchSongs();
+        });
+    </script>
+</body>
+</html>
