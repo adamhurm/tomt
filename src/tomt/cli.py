@@ -142,6 +142,37 @@ def search(query: str, limit: int, db: str):
 
 
 @main.command()
+@click.option("--db", default="tomt.db", help="Database path")
+def random(db: str):
+    """Roll the dice and get a random song from the database."""
+    service = get_service(db_path=db)
+    song = service.db.get_random_song()
+
+    if not song:
+        console.print("[yellow]No songs in the database yet. Run 'tomt discover' first.[/yellow]")
+        return
+
+    table = Table(title="Random Song")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+
+    table.add_row("Artist", song.artist)
+    table.add_row("Title", song.title)
+    table.add_row("Album", song.album or "-")
+    table.add_row("Year", str(song.year) if song.year else "-")
+    table.add_row("Times Searched", str(song.discovery_count))
+
+    if song.spotify_url:
+        table.add_row("Spotify", song.spotify_url)
+    if song.youtube_url:
+        table.add_row("YouTube", song.youtube_url)
+    if song.apple_music_url:
+        table.add_row("Apple Music", song.apple_music_url)
+
+    console.print(table)
+
+
+@main.command()
 @click.option("--limit", "-l", default=20, help="Max results")
 @click.option("--db", default="tomt.db", help="Database path")
 def open_requests(limit: int, db: str):

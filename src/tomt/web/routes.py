@@ -19,6 +19,7 @@ from tomt.web.schemas import (
     PostResponse,
     ProcessRequest,
     ProcessResponse,
+    RandomRequest,
     SearchRequest,
     SongResponse,
     SongsRequest,
@@ -345,6 +346,85 @@ async def search_songs_simple(
         )
         for song in songs
     ]
+
+
+@router.post(
+    "/api/random",
+    response_model=Optional[SongResponse],
+    responses={400: {"model": ErrorResponse}},
+    tags=["Songs"],
+    summary="Get random song",
+    description="Roll the dice and get a random song from the database.",
+)
+async def get_random_song(
+    request: RandomRequest,
+    x_reddit_client_id: Optional[str] = Header(None),
+    x_reddit_client_secret: Optional[str] = Header(None),
+    x_anthropic_api_key: Optional[str] = Header(None),
+):
+    """Get a random song from the database."""
+    service = get_service(
+        keys=request.keys,
+        x_reddit_client_id=x_reddit_client_id,
+        x_reddit_client_secret=x_reddit_client_secret,
+        x_anthropic_api_key=x_anthropic_api_key,
+    )
+
+    song = service.db.get_random_song()
+
+    if not song:
+        return None
+
+    return SongResponse(
+        id=song.id,
+        title=song.title,
+        artist=song.artist,
+        album=song.album,
+        year=song.year,
+        spotify_url=song.spotify_url,
+        youtube_url=song.youtube_url,
+        apple_music_url=song.apple_music_url,
+        discovered_at=song.discovered_at,
+        discovery_count=song.discovery_count,
+    )
+
+
+@router.get(
+    "/api/random",
+    response_model=Optional[SongResponse],
+    tags=["Songs"],
+    summary="Get random song (GET)",
+    description="Roll the dice and get a random song from the database. Uses environment API keys.",
+)
+async def get_random_song_simple(
+    x_reddit_client_id: Optional[str] = Header(None),
+    x_reddit_client_secret: Optional[str] = Header(None),
+    x_anthropic_api_key: Optional[str] = Header(None),
+):
+    """Get a random song with simple GET request."""
+    service = get_service(
+        x_reddit_client_id=x_reddit_client_id,
+        x_reddit_client_secret=x_reddit_client_secret,
+        x_anthropic_api_key=x_anthropic_api_key,
+    )
+
+    song = service.db.get_random_song()
+
+    if not song:
+        return None
+
+    return SongResponse(
+        id=song.id,
+        title=song.title,
+        artist=song.artist,
+        album=song.album,
+        year=song.year,
+        spotify_url=song.spotify_url,
+        youtube_url=song.youtube_url,
+        apple_music_url=song.apple_music_url,
+        discovered_at=song.discovered_at,
+        discovery_count=song.discovery_count,
+    )
 
 
 @router.post(

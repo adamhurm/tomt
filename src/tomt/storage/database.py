@@ -14,6 +14,7 @@ from sqlalchemy import (
     Table,
     Text,
     create_engine,
+    func,
 )
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
@@ -290,6 +291,14 @@ class Database:
                 .limit(limit)
             )
             return [r.to_model() for r in query.all()]
+
+    def get_random_song(self) -> Optional[Song]:
+        """Get a random song from the database."""
+        with self.get_session() as session:
+            record = (
+                session.query(SongRecord).order_by(func.random()).limit(1).first()
+            )
+            return record.to_model() if record else None
 
     def get_stats(self) -> dict:
         """Get database statistics."""
