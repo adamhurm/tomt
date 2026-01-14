@@ -167,14 +167,23 @@ class PostParser:
             result = json.loads(response_text.strip())
 
             if result.get("found"):
+                # Validate required fields are present and non-empty strings
+                song_title = result.get("song_title")
+                artist = result.get("artist")
+
+                if not song_title or not isinstance(song_title, str):
+                    return None
+                if not artist or not isinstance(artist, str):
+                    return None
+
                 # Create a unique ID from artist and title
-                song_id = f"{result['artist']}_{result['song_title']}".lower()
+                song_id = f"{artist}_{song_title}".lower()
                 song_id = "".join(c if c.isalnum() else "_" for c in song_id)
 
                 return Song(
                     id=song_id,
-                    title=result["song_title"],
-                    artist=result["artist"],
+                    title=song_title,
+                    artist=artist,
                     album=result.get("album"),
                     year=result.get("year"),
                     source_post_ids=[post.id],

@@ -119,7 +119,13 @@ class DiscoveryService:
                     continue
 
                 # Extract solution
-                song = self.parser.extract_solution(post, comments)
+                try:
+                    song = self.parser.extract_solution(post, comments)
+                except Exception as e:
+                    self.console.print(f"[yellow]Warning: Could not extract solution for {post.id}: {e}[/yellow]")
+                    progress.advance(task)
+                    continue
+
                 if song:
                     # Add the original description to the song
                     if post.description:
