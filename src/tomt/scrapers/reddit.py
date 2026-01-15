@@ -61,7 +61,7 @@ class RedditScraper:
             subreddits: List of subreddits to scrape (defaults to music TOMT subs)
         """
         # Support both script apps (with secret) and installed apps (without)
-        self.reddit = asyncpraw.AsyncReddit(
+        self.reddit = asyncpraw.Reddit(
             client_id=client_id,
             client_secret=client_secret or "",
             user_agent=user_agent,
