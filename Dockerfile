@@ -26,7 +26,7 @@ WORKDIR /app
 RUN useradd --create-home --shell /bin/bash tomt
 
 # Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 COPY --from=builder /usr/local/bin/tomt /usr/local/bin/tomt
 COPY --from=builder /usr/local/bin/tomt-web /usr/local/bin/tomt-web
 
