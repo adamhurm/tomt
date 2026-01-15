@@ -2,10 +2,10 @@
 
 import re
 from datetime import datetime
-from typing import AsyncIterator, Optional
+from typing import Iterator, Optional
 
-import asyncpraw
-from asyncpraw.models import Submission
+import praw
+from praw.models import Submission
 
 from tomt.models.post import Post, PostStatus
 
@@ -61,7 +61,7 @@ class RedditScraper:
             subreddits: List of subreddits to scrape (defaults to music TOMT subs)
         """
         # Support both script apps (with secret) and installed apps (without)
-        self.reddit = asyncpraw.Reddit(
+        self.reddit = praw.Reddit(
             client_id=client_id,
             client_secret=client_secret or "",
             user_agent=user_agent,
@@ -70,14 +70,13 @@ class RedditScraper:
         self._music_patterns = [re.compile(p, re.IGNORECASE) for p in MUSIC_FLAIR_PATTERNS]
         self._audio_patterns = [re.compile(p, re.IGNORECASE) for p in AUDIO_LINK_PATTERNS]
 
-    async def _is_music_post(self, submission: Submission) -> bool:
+    def _is_music_post(self, submission: Submission) -> bool:
         """Check if a post is music-related.
 
         For dedicated music subreddits, all posts are music-related.
         For r/tipofmytongue, we check the flair/title.
         """
-        subreddit = await submission.subreddit()
-        subreddit_name = subreddit.display_name.lower()
+        subreddit_name = submission.subreddit.display_name.lower()
 
         # Dedicated music subs - all posts are relevant
         if subreddit_name in ["whatsthissong", "namethatsong"]:
@@ -145,7 +144,7 @@ class RedditScraper:
             audio_links=audio_links,
         )
 
-    async def scrape_new(self, limit: int = 100) -> AsyncIterator[Post]:
+    def scrape_new(self, limit: int = 100) -> Iterator[Post]:
         """Scrape new posts from configured subreddits.
 
         Args:
@@ -155,13 +154,13 @@ class RedditScraper:
             Post objects for music-related TOMT posts
         """
         for subreddit_name in self.subreddits:
-            subreddit = await self.reddit.subreddit(subreddit_name)
+            subreddit = self.reddit.subreddit(subreddit_name)
 
-            async for submission in subreddit.new(limit=limit):
-                if await self._is_music_post(submission):
+            for submission in subreddit.new(limit=limit):
+                if self._is_music_post(submission):
                     yield self._submission_to_post(submission)
 
-    async def scrape_hot(self, limit: int = 100) -> AsyncIterator[Post]:
+    def scrape_hot(self, limit: int = 100) -> Iterator[Post]:
         """Scrape hot posts from configured subreddits.
 
         Args:
@@ -171,13 +170,13 @@ class RedditScraper:
             Post objects for music-related TOMT posts
         """
         for subreddit_name in self.subreddits:
-            subreddit = await self.reddit.subreddit(subreddit_name)
+            subreddit = self.reddit.subreddit(subreddit_name)
 
-            async for submission in subreddit.hot(limit=limit):
-                if await self._is_music_post(submission):
+            for submission in subreddit.hot(limit=limit):
+                if self._is_music_post(submission):
                     yield self._submission_to_post(submission)
 
-    async def scrape_solved(self, limit: int = 100) -> AsyncIterator[Post]:
+    def scrape_solved(self, limit: int = 100) -> Iterator[Post]:
         """Scrape solved posts - these are valuable for building our song database.
 
         Args:
@@ -187,16 +186,16 @@ class RedditScraper:
             Post objects that have been solved
         """
         for subreddit_name in self.subreddits:
-            subreddit = await self.reddit.subreddit(subreddit_name)
+            subreddit = self.reddit.subreddit(subreddit_name)
 
             # Search for posts with solved flair
-            async for submission in subreddit.search("flair:solved OR flair:answered", limit=limit):
-                if await self._is_music_post(submission):
+            for submission in subreddit.search("flair:solved OR flair:answered", limit=limit):
+                if self._is_music_post(submission):
                     post = self._submission_to_post(submission)
                     post.status = PostStatus.SOLVED
                     yield post
 
-    async def get_post_with_comments(self, post_id: str) -> tuple[Post, list[dict]]:
+    def get_post_with_comments(self, post_id: str) -> tuple[Post, list[dict]]:
         """Fetch a specific post with its comments.
 
         Args:
@@ -205,13 +204,13 @@ class RedditScraper:
         Returns:
             Tuple of (Post, list of comment dicts)
         """
-        submission = await self.reddit.submission(id=post_id)
-        await submission.comments.replace_more(limit=0)  # Flatten comment tree
+        submission = self.reddit.submission(id=post_id)
+        submission.comments.replace_more(limit=0)  # Flatten comment tree
 
         post = self._submission_to_post(submission)
 
         comments = []
-        async for comment in submission.comments.list():
+        for comment in submission.comments.list():
             comments.append(
                 {
                     "id": comment.id,

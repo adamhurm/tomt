@@ -42,7 +42,7 @@ class DiscoveryService:
         self.db.init_db()
         self.console = Console()
 
-    async def scrape_and_store(
+    def scrape_and_store(
         self,
         mode: str = "new",
         limit: int = 100,
@@ -75,7 +75,7 @@ class DiscoveryService:
         ) as progress:
             task = progress.add_task("Scraping posts...", total=None)
 
-            async for post in posts:
+            for post in posts:
                 if enrich:
                     progress.update(task, description=f"Enriching: {post.id}")
                     post = self.parser.enrich_post(post)
@@ -86,7 +86,7 @@ class DiscoveryService:
 
         return count
 
-    async def process_solved_posts(self, limit: int = 50) -> int:
+    def process_solved_posts(self, limit: int = 50) -> int:
         """Process solved posts to extract song information.
 
         Args:
@@ -112,7 +112,7 @@ class DiscoveryService:
 
                 # Fetch comments
                 try:
-                    _, comments = await self.scraper.get_post_with_comments(post.id)
+                    _, comments = self.scraper.get_post_with_comments(post.id)
                 except Exception as e:
                     self.console.print(f"[yellow]Warning: Could not fetch comments for {post.id}: {e}[/yellow]")
                     progress.advance(task)
@@ -141,7 +141,7 @@ class DiscoveryService:
 
         return songs_found
 
-    async def discover(
+    def discover(
         self,
         scrape_mode: str = "solved",
         scrape_limit: int = 100,
@@ -160,7 +160,7 @@ class DiscoveryService:
         self.console.print("[bold blue]Starting discovery cycle...[/bold blue]")
 
         # Scrape posts
-        posts_scraped = await self.scrape_and_store(
+        posts_scraped = self.scrape_and_store(
             mode=scrape_mode,
             limit=scrape_limit,
             enrich=True,
@@ -169,7 +169,7 @@ class DiscoveryService:
 
         songs_found = 0
         if process and scrape_mode == "solved":
-            songs_found = await self.process_solved_posts(limit=scrape_limit)
+            songs_found = self.process_solved_posts(limit=scrape_limit)
             self.console.print(f"[green]Discovered {songs_found} songs[/green]")
 
         stats = self.db.get_stats()

@@ -170,7 +170,7 @@ async def discover(
     )
 
     try:
-        results = await service.discover(
+        results = service.discover(
             scrape_mode=request.mode,
             scrape_limit=request.limit,
             process=request.process,
@@ -597,7 +597,7 @@ async def process_posts(
     )
 
     try:
-        songs_found = await service.process_solved_posts(limit=request.limit)
+        songs_found = service.process_solved_posts(limit=request.limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 

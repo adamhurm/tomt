@@ -1,6 +1,5 @@
 """Command-line interface for TOMT music discovery service."""
 
-import asyncio
 import os
 from typing import Optional
 
@@ -61,11 +60,11 @@ def discover(mode: str, limit: int, db: str, no_process: bool):
     """Run a discovery cycle to find new songs."""
     service = get_service(db_path=db)
 
-    results = asyncio.run(service.discover(
+    results = service.discover(
         scrape_mode=mode,
         scrape_limit=limit,
         process=not no_process,
-    ))
+    )
 
     console.print("\n[bold]Discovery Results:[/bold]")
     table = Table(show_header=False)
@@ -228,7 +227,7 @@ def stats(db: str):
 def process(limit: int, db: str):
     """Process solved posts to extract song information."""
     service = get_service(db_path=db)
-    songs_found = asyncio.run(service.process_solved_posts(limit=limit))
+    songs_found = service.process_solved_posts(limit=limit)
     console.print(f"[green]Discovered {songs_found} new songs[/green]")
 
 
